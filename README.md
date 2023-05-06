@@ -13,6 +13,11 @@ Modules/Packages used:
 * matplotlib
 * time
 * colorama
+<!-- -->
+Install the dependencies:
+```bash
+pip install -r requirements.txt
+```
 
 ## Neural Network
 Input Layer Dimensions = **28x28**<br />
