@@ -105,7 +105,7 @@ if __name__ == "__main__":
         display('+', f"Setting up the {Back.MAGENTA}Training Set{Back.RESET}")
         trainset = torchvision.datasets.MNIST("mnist", train=True, download=True, transform=transform)
         display('+', f"Setting up the {Back.MAGENTA}Testing Set{Back.RESET}")
-        testset = torchvision.datasets.MNIST("mnist", train=True, download=True, transform=transform)
+        testset = torchvision.datasets.MNIST("mnist", train=False, download=True, transform=transform)
         display(':', f"Number of Image Samples for {Back.MAGENTA}Train Set{Back.RESET} = {Back.MAGENTA}{trainset.data.shape[0]}{Back.RESET}")
         display(':', f"Number of Image Samples for {Back.MAGENTA}Test Set{Back.RESET}  = {Back.MAGENTA}{testset.data.shape[0]}{Back.RESET}")
         display(':', f"Dimensions of Images = {Back.MAGENTA}{trainset.data.shape[2]}x{trainset.data.shape[1]}{Back.RESET}")
