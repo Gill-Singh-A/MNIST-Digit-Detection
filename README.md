@@ -13,6 +13,8 @@ Modules/Packages used:
 * matplotlib
 * time
 * colorama
+* numpy
+* pygame
 <!-- -->
 Install the dependencies:
 ```bash
@@ -48,3 +50,12 @@ Algorithm for Minimizing Loss = **Scholastic Gradient Descent**
 * '-r', "--learning-rate" : Learning Rate for Loss Function
 * '-m', "--momentum" : Momentum for Loss Function
 * '-e', "--epoches" : Number of Epoches for Training
+
+## Outputs
+A Graph of Accuracy & Loss vs Epochs.<br />
+Then a Screen with 28x28 boxes in which you can play, by drawing numbers and predicting them using the Network.<br />
+The Screen has these controls:
+* Press D: Sets Mode to Drawing (Click on any box, it would become White)
+* Press E: Sets Mode to Erasing (Click on any box, it would become Black)
+* Press C: Clears the Whole Screen (All Boxes Black)
+* Press =: Runs the Whole Network and displays the Predicted Number
