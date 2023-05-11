@@ -5,3 +5,5 @@ pathlib
 datetime
 matplotlib
 colorama
+numpy
+pygame
