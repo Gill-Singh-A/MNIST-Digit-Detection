@@ -215,6 +215,7 @@ if __name__ == "__main__":
         plotAccuracyLoss(epoch_log, accuracy_log, loss_log)
     pygame.init()
     window = pygame.display.set_mode((data.side*28, data.side*28))
+    pygame.display.set_caption("Draw Numbers")
     matrix = [[0 for __ in range(28)] for _ in range(28)]                             # 0 For Black, 1 for White
     running, mouse_button_pressed, draw = True, False, True
     while running:
