@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import torch, torchvision, pickle
+import torch, torchvision, pickle, pygame, numpy
 from torch import nn
 from torch import optim
 from pathlib import Path
@@ -16,6 +16,15 @@ batch_size = 128
 learning_rate = 0.001
 momentum = 0.9
 epoches = 10
+side = 30
+border = 1
+
+WHITE = (255, 255, 255)
+GRAY = (50, 50, 50)
+BRIGHT_GRAY = (150, 150, 150)
+BLACK = (0, 0, 0)
+
+COLOR = {0: BLACK, 1: WHITE}
 
 status_color = {
 	'+': Fore.GREEN,
@@ -42,7 +51,7 @@ class neuralNetwork(nn.Module):
         self.conv_1 = nn.Conv2d(1, 32, 3)              # Making a 2D Convolutional Filter Layer with Input Channel = 1, Output Channel = 32, Kernel Size = 3
         self.conv_2 = nn.Conv2d(32, 64, 3)             # Making a 2D Convolutional Filter Layer with Input Channel = 32, Output Channel = 64, Kernel Size = 3
         self.pool = nn.MaxPool2d(2, 2)                 # Making a 2D Max Pool Layer with Kernel Size = 2, Stride = 2
-        self.fc_1 = nn.Linear(9216, 128)       # Flattening the Previous Layer into a Fully Connected Layer
+        self.fc_1 = nn.Linear(9216, 128)               # Flattening the Previous Layer into a Fully Connected Layer
         self.fc_2 = nn.Linear(128, 10)                 # Fully Connecting Input 128 Nodes with Output 10 Nodes
     def forward(self, data):                           # Forward Propogation Function
         data = function.relu(self.conv_1(data))
@@ -73,6 +82,14 @@ def plotAccuracyLoss(epoch_log, accuracy_log, loss_log):
     axis.set_ylabel("Loss", color='g')
     axis_1.set_ylabel("Test Accuracy", color='b')
     plot.show()
+def drawPixels(window, matrix, border, hover):
+    side = window.get_width() // 28
+    for row_index, row in enumerate(matrix):
+        for col_index, value in enumerate(row):
+            pygame.draw.rect(window, COLOR[value], (col_index*side, row_index*side, side, side))
+            pygame.draw.rect(window, GRAY, (col_index*side, row_index*side, side, side), border)
+    pygame.draw.rect(window, BRIGHT_GRAY, (hover[0]*side, hover[1]*side, side, side))
+    pygame.draw.rect(window, GRAY, (hover[0]*side, hover[1]*side, side, side), border)
 
 if __name__ == "__main__":
     data = get_arguments(('-d', "--device", "device", "Device to use for training the Neural Network (cpu/gpu)"),
@@ -81,7 +98,9 @@ if __name__ == "__main__":
                          ('-b', "--batch", "batch", f"Batch Size for the Training (Default={batch_size})"),
                          ('-r', "--learning-rate", "learning_rate" , f"Learning Rate for Loss Function (Default={learning_rate})"),
                          ('-m', "--momentum", "momentum", f"Momentum for Loss Function (Default={momentum})"),
-						 ('-e', "--epoches", "epoches", f"Number of Epoches for Training (Default={epoches})"))
+						 ('-e', "--epoches", "epoches", f"Number of Epoches for Training (Default={epoches})"),
+                         ('-w', "--side", "side", f"Size of a single Square (Default={side})"),
+                         ('-c', "--border-size", "border_size", f"Size of Border of Square (Default={border})"))
     device = getDevice(data.device)
     if not data.batch:
         data.batch = batch_size
@@ -99,6 +118,14 @@ if __name__ == "__main__":
         data.epoches = epoches
     else:
         data.epoches = int(data.epoches)
+    if not data.side:
+        data.side = side
+    else:
+        data.side = int(data.side)
+    if not data.border_size:
+        data.border_size = border
+    else:
+        data.border_size = int(data.border_size)
     if not data.load:
         display('+', f"Setting up the {Back.MAGENTA}Transformer{Back.RESET}")
         transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5, ), (0.5, ))])                         # Making Transformer Object for pre-processing Data and converting the 0-255 GrayScale Pixel Values between -1 and 1 and converting them to tensor Object
@@ -186,3 +213,38 @@ if __name__ == "__main__":
         with open(f"models/{data.load}/accuracy_log", 'rb') as file:
             accuracy_log = pickle.load(file)
         plotAccuracyLoss(epoch_log, accuracy_log, loss_log)
+    pygame.init()
+    window = pygame.display.set_mode((data.side*28, data.side*28))
+    matrix = [[0 for __ in range(28)] for _ in range(28)]                             # 0 For Black, 1 for White
+    running, mouse_button_pressed, draw = True, False, True
+    while running:
+        x_mouse, y_mouse = [position//data.side for position in pygame.mouse.get_pos()]
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+                break
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_d:
+                    display(':', f"Set Mode to {Back.MAGENTA}Drawing{Back.RESET}")
+                    draw = True
+                if event.key == pygame.K_e:
+                    display(':', f"Set Mode to {Back.MAGENTA}Erase{Back.RESET}")
+                    draw = False
+                if event.key == pygame.K_c:
+                    display(':', "Clearing the Screen")
+                    matrix = [[0 for __ in range(28)] for _ in range(28)]
+                if event.key == pygame.K_EQUALS:
+                    start = time()
+                    image = numpy.array([matrix], dtype=numpy.float32)
+                    image[image == 0] = -1.0
+                    torch_image = torch.from_numpy(image)
+                    torch_image = torch_image.to(device)
+                    output = network(torch_image)
+                    probabilities = output.data.tolist()[0]
+                    end = time()
+                    display('+', f"Predicted Number = {Back.MAGENTA}{probabilities.index(max(probabilities))}{Back.RESET}, Time Taken = {Back.MAGENTA}{end-start}{Back.RESET} seconds")
+        if pygame.mouse.get_pressed()[0]:
+            matrix[y_mouse][x_mouse] = int(draw)
+        drawPixels(window, matrix, data.border_size, (x_mouse, y_mouse))
+        pygame.display.update()
+    pygame.quit()
