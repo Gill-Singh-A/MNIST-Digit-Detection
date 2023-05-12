@@ -244,7 +244,7 @@ if __name__ == "__main__":
                     probabilities = output.data.tolist()[0]
                     end = time()
                     display('+', f"Predicted Number = {Back.MAGENTA}{probabilities.index(max(probabilities))}{Back.RESET}, Time Taken = {Back.MAGENTA}{end-start}{Back.RESET} seconds")
-        if pygame.mouse.get_pressed()[0]:
+        if pygame.mouse.get_pressed()[0] and x_mouse >= 0 and x_mouse < 28 and y_mouse >= 0 and y_mouse < 28:
             matrix[y_mouse][x_mouse] = int(draw)
         drawPixels(window, matrix, data.border_size, (x_mouse, y_mouse))
         pygame.display.update()
