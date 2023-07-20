@@ -1,0 +1,8 @@
+tensorflow
+pickle4
+pathlib
+datetime
+matplotlib
+colorama
+numpy
+pygame
